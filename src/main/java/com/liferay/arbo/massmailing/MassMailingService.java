@@ -16,6 +16,7 @@ public class MassMailingService
 	public void send(Message message, Collection<Address> targets)
 	{
 		if (targets.size() <= this.targetCountLocalLimit)
+		// && message.lineCount() <= this.lineCountLocalLimit
 		{
 			for (Address address : targets)
 			{
