@@ -8,7 +8,7 @@ public class MassMailingServiceTest
 	@Test
 	public void smoke()
 	{
-
+		new MassMailingService();
 	}
 
 }
