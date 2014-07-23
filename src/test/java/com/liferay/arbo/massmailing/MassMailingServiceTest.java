@@ -1,17 +1,18 @@
 package com.liferay.arbo.massmailing;
 
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
 import static org.powermock.api.support.membermodification.MemberModifier.stub;
 
 import java.util.Arrays;
-import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -28,31 +29,56 @@ import com.liferay.arbo.global.GlobalSystemParameterConfigurationSettings;
 public class MassMailingServiceTest
 {
 
+	@Before
+	public void prepareMocks()
+	{
+		MockitoAnnotations.initMocks(this);
+	}
+
 	@Test
 	public void local()
+	{
+		stubTargetCountLocalLimit(3);
+
+		mockStatic(LocalEmailSender.class);
+
+		send();
+
+		verifyStatic();
+		LocalEmailSender.send(this.message, this.address1);
+		verifyStatic();
+		LocalEmailSender.send(this.message, this.address2);
+	}
+
+	@Test
+	public void commercial()
+	{
+		stubTargetCountLocalLimit(1);
+
+		send();
+	}
+
+	void stubTargetCountLocalLimit(long limit)
 	{
 		mockStatic(
 				GlobalSystemParameterConfigurationSettings.class,
 				CALLS_REAL_METHODS);
+
 		stub(method(
 				GlobalSystemParameterConfigurationSettings.class,
 				"getMassMailingTargetCountLocalLimit"
 				))
-				.toReturn(3);
-
-		mockStatic(LocalEmailSender.class);
-
-		Message message = mock(Message.class);
-		Address address1 = mock(Address.class), address2 = mock(Address.class);
-
-		List<Address> targets = Arrays.asList(address1, address2);
-
-		new MassMailingService().send(message, targets);
-
-		verifyStatic();
-		LocalEmailSender.send(message, address1);
-		verifyStatic();
-		LocalEmailSender.send(message, address2);
+				.toReturn(limit);
 	}
+
+	void send()
+	{
+		new MassMailingService().send(
+				this.message, Arrays.asList(this.address1, this.address2));
+	}
+
+	@Mock Message message;
+	@Mock Address address1;
+	@Mock Address address2;
 
 }
