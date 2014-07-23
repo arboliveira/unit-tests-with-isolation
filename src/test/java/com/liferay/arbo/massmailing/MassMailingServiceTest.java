@@ -1,6 +1,9 @@
 package com.liferay.arbo.massmailing;
 
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
@@ -20,11 +23,14 @@ import com.liferay.arbo.email.Address;
 import com.liferay.arbo.email.LocalEmailSender;
 import com.liferay.arbo.email.Message;
 import com.liferay.arbo.global.GlobalSystemParameterConfigurationSettings;
+import com.massmailingcorp.api.CommercialMailingService;
+import com.massmailingcorp.api.CommercialMailingServiceFactory;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
 		GlobalSystemParameterConfigurationSettings.class,
-		LocalEmailSender.class
+		LocalEmailSender.class,
+		CommercialMailingServiceFactory.class
 })
 public class MassMailingServiceTest
 {
@@ -55,7 +61,27 @@ public class MassMailingServiceTest
 	{
 		stubTargetCountLocalLimit(1);
 
+		CommercialMailingService commercial =
+				mock(CommercialMailingService.class);
+
+		mockStatic(
+				CommercialMailingServiceFactory.class,
+				CALLS_REAL_METHODS);
+		stub(method(
+				CommercialMailingServiceFactory.class,
+				"getInstance"
+				))
+				.toReturn(commercial);
+
+		when(this.message.subject()).thenReturn("SUBJECT");
+		when(this.message.body()).thenReturn("BODY");
+		when(this.address1.address()).thenReturn("ADDRESS1");
+		when(this.address2.address()).thenReturn("ADDRESS2");
+
 		send();
+
+		verify(commercial).send(
+				"SUBJECT", "BODY", Arrays.asList("ADDRESS1", "ADDRESS2"));
 	}
 
 	void stubTargetCountLocalLimit(long limit)
