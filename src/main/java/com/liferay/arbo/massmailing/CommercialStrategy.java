@@ -6,7 +6,6 @@ import java.util.Collection;
 import com.liferay.arbo.email.Address;
 import com.liferay.arbo.email.Message;
 import com.massmailingcorp.api.CommercialMailingService;
-import com.massmailingcorp.api.CommercialMailingServiceFactory;
 
 class CommercialStrategy implements Strategy
 {
@@ -20,11 +19,14 @@ class CommercialStrategy implements Strategy
 			targetsList.add(address.address());
 		}
 
-		CommercialMailingService commercial =
-				CommercialMailingServiceFactory.getInstance();
-
-		commercial.send(
-				message.subject(), message.body(), targetsList);
+		this.commercial.send(message.subject(), message.body(), targetsList);
 	}
+
+	CommercialStrategy(CommercialMailingService commercial)
+	{
+		this.commercial = commercial;
+	}
+
+	CommercialMailingService commercial;
 
 }

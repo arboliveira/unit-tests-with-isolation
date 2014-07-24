@@ -5,7 +5,7 @@ import java.util.Collection;
 import com.liferay.arbo.email.Address;
 import com.liferay.arbo.email.LocalEmailSender;
 import com.liferay.arbo.email.Message;
-import com.liferay.arbo.global.GlobalSystemParameterConfigurationSettings;
+import com.massmailingcorp.api.CommercialMailingServiceFactory;
 
 public class MassMailingService
 {
@@ -30,22 +30,19 @@ public class MassMailingService
 	public MassMailingService()
 	{
 		this(
+				new SettingsFromGlobals(),
 				new LocalStrategy(new LocalEmailSender()),
-				new CommercialStrategy());
+				new CommercialStrategy(
+						CommercialMailingServiceFactory.getInstance()));
 	}
 
-	MassMailingService(Strategy local, Strategy commercial)
+	MassMailingService(Settings settings, Strategy local, Strategy commercial)
 	{
 		this.local = local;
 		this.commercial = commercial;
 
-		this.targetCountLocalLimit =
-				GlobalSystemParameterConfigurationSettings
-						.getMassMailingTargetCountLocalLimit();
-
-		this.lineCountLocalLimit =
-				GlobalSystemParameterConfigurationSettings
-						.getMassMailingLineCountLocalLimit();
+		this.targetCountLocalLimit = settings.targetCountLocalLimit();
+		this.lineCountLocalLimit = settings.lineCountLocalLimit();
 	}
 
 	Strategy local;

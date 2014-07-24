@@ -1,30 +1,20 @@
 package com.liferay.arbo.massmailing;
 
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
-import static org.powermock.api.support.membermodification.MemberModifier.stub;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.liferay.arbo.email.Address;
 import com.liferay.arbo.email.Message;
-import com.liferay.arbo.global.GlobalSystemParameterConfigurationSettings;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ GlobalSystemParameterConfigurationSettings.class })
 public class MassMailingServiceTest
 {
 
@@ -34,10 +24,6 @@ public class MassMailingServiceTest
 		MockitoAnnotations.initMocks(this);
 
 		this.targets = Arrays.asList(this.address1, this.address2);
-
-		mockStatic(
-				GlobalSystemParameterConfigurationSettings.class,
-				CALLS_REAL_METHODS);
 	}
 
 	@Test
@@ -85,11 +71,7 @@ public class MassMailingServiceTest
 
 	void stubTargetCountLocalLimit(long limit)
 	{
-		stub(method(
-				GlobalSystemParameterConfigurationSettings.class,
-				"getMassMailingTargetCountLocalLimit"
-				))
-				.toReturn(limit);
+		when(this.settings.targetCountLocalLimit()).thenReturn(limit);
 	}
 
 	void stubLineCount_acceptable()
@@ -104,18 +86,14 @@ public class MassMailingServiceTest
 		when(this.message.lineCount()).thenReturn(11);
 	}
 
-	void stubLineCountLocalLimit(long limit)
+	void stubLineCountLocalLimit(int limit)
 	{
-		stub(method(
-				GlobalSystemParameterConfigurationSettings.class,
-				"getMassMailingLineCountLocalLimit"
-				))
-				.toReturn(limit);
+		when(this.settings.lineCountLocalLimit()).thenReturn(limit);
 	}
 
 	void send()
 	{
-		new MassMailingService(this.local, this.commercial)
+		new MassMailingService(this.settings, this.local, this.commercial)
 				.send(this.message, this.targets);
 	}
 
@@ -127,6 +105,7 @@ public class MassMailingServiceTest
 		Mockito.verifyZeroInteractions(unused);
 	}
 
+	@Mock Settings settings;
 	@Mock Strategy local;
 	@Mock Strategy commercial;
 
@@ -135,4 +114,5 @@ public class MassMailingServiceTest
 	@Mock Address address2;
 
 	List<Address> targets;
+
 }
