@@ -1,6 +1,5 @@
 package com.liferay.arbo.massmailing;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import com.liferay.arbo.email.Address;
@@ -8,8 +7,6 @@ import com.liferay.arbo.email.EmailSender;
 import com.liferay.arbo.email.LocalEmailSender;
 import com.liferay.arbo.email.Message;
 import com.liferay.arbo.global.GlobalSystemParameterConfigurationSettings;
-import com.massmailingcorp.api.CommercialMailingService;
-import com.massmailingcorp.api.CommercialMailingServiceFactory;
 
 public class MassMailingService
 {
@@ -19,24 +16,11 @@ public class MassMailingService
 		if (targets.size() <= this.targetCountLocalLimit
 				&& message.lineCount() <= this.lineCountLocalLimit)
 		{
-			for (Address address : targets)
-			{
-				this.localEmailSender.send(message, address);
-			}
+			new LocalStrategy(this.localEmailSender).send(message, targets);
 		}
 		else
 		{
-			ArrayList<String> targetsList = new ArrayList<>(targets.size());
-			for (Address address : targets)
-			{
-				targetsList.add(address.address());
-			}
-
-			CommercialMailingService commercial =
-					CommercialMailingServiceFactory.getInstance();
-
-			commercial.send(
-					message.subject(), message.body(), targetsList);
+			new CommercialStrategy().send(message, targets);
 		}
 	}
 
