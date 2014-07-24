@@ -15,8 +15,8 @@ public class MassMailingService
 
 	public void send(Message message, Collection<Address> targets)
 	{
-		if (targets.size() <= this.targetCountLocalLimit)
-		// && message.lineCount() <= this.lineCountLocalLimit
+		if (targets.size() <= this.targetCountLocalLimit
+				&& message.lineCount() <= this.lineCountLocalLimit)
 		{
 			for (Address address : targets)
 			{
@@ -44,8 +44,14 @@ public class MassMailingService
 		this.targetCountLocalLimit =
 				GlobalSystemParameterConfigurationSettings
 						.getMassMailingTargetCountLocalLimit();
+
+		this.lineCountLocalLimit =
+				GlobalSystemParameterConfigurationSettings
+						.getMassMailingLineCountLocalLimit();
 	}
 
 	long targetCountLocalLimit;
+
+	int lineCountLocalLimit;
 
 }
