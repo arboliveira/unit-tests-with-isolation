@@ -39,12 +39,17 @@ public class MassMailingServiceTest
 	public void prepareMocks()
 	{
 		MockitoAnnotations.initMocks(this);
+
+		mockStatic(
+				GlobalSystemParameterConfigurationSettings.class,
+				CALLS_REAL_METHODS);
 	}
 
 	@Test
 	public void local()
 	{
-		stubTargetCountLocalLimit(3);
+		stubTargetCount_acceptable();
+		stubLineCount_acceptable();
 
 		mockStatic(LocalEmailSender.class);
 
@@ -57,10 +62,26 @@ public class MassMailingServiceTest
 	}
 
 	@Test
-	public void commercial()
+	public void tooManyTargets_commercial()
 	{
-		stubTargetCountLocalLimit(1);
+		stubTargetCount_tooMany();
+		stubLineCount_acceptable();
 
+		testCommercial();
+	}
+
+	@Test
+	public void tooManyLines_commercial()
+	{
+		stubTargetCount_acceptable();
+		stubLineCount_tooMany();
+
+		testCommercial();
+
+	}
+
+	void testCommercial()
+	{
 		CommercialMailingService commercial =
 				mock(CommercialMailingService.class);
 
@@ -84,15 +105,42 @@ public class MassMailingServiceTest
 				"SUBJECT", "BODY", Arrays.asList("ADDRESS1", "ADDRESS2"));
 	}
 
+	void stubTargetCount_acceptable()
+	{
+		stubTargetCountLocalLimit(3);
+	}
+
+	void stubTargetCount_tooMany()
+	{
+		stubTargetCountLocalLimit(1);
+	}
+
 	void stubTargetCountLocalLimit(long limit)
 	{
-		mockStatic(
-				GlobalSystemParameterConfigurationSettings.class,
-				CALLS_REAL_METHODS);
-
 		stub(method(
 				GlobalSystemParameterConfigurationSettings.class,
 				"getMassMailingTargetCountLocalLimit"
+				))
+				.toReturn(limit);
+	}
+
+	void stubLineCount_acceptable()
+	{
+		stubLineCountLocalLimit(10);
+		when(this.message.lineCount()).thenReturn(9);
+	}
+
+	void stubLineCount_tooMany()
+	{
+		stubLineCountLocalLimit(10);
+		when(this.message.lineCount()).thenReturn(11);
+	}
+
+	void stubLineCountLocalLimit(long limit)
+	{
+		stub(method(
+				GlobalSystemParameterConfigurationSettings.class,
+				"getMassMailingLineCountLocalLimit"
 				))
 				.toReturn(limit);
 	}
