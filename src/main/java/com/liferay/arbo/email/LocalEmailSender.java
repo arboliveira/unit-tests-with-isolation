@@ -1,9 +1,10 @@
 package com.liferay.arbo.email;
 
-public class LocalEmailSender
+public class LocalEmailSender implements EmailSender
 {
 
-	public static void send(Message message, Address target)
+	@Override
+	public void send(Message message, Address target)
 	{
 		take5Seconds();
 

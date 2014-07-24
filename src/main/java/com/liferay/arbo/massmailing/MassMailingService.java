@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.liferay.arbo.email.Address;
+import com.liferay.arbo.email.EmailSender;
 import com.liferay.arbo.email.LocalEmailSender;
 import com.liferay.arbo.email.Message;
 import com.liferay.arbo.global.GlobalSystemParameterConfigurationSettings;
@@ -20,7 +21,7 @@ public class MassMailingService
 		{
 			for (Address address : targets)
 			{
-				LocalEmailSender.send(message, address);
+				this.localEmailSender.send(message, address);
 			}
 		}
 		else
@@ -41,6 +42,13 @@ public class MassMailingService
 
 	public MassMailingService()
 	{
+		this(new LocalEmailSender());
+	}
+
+	MassMailingService(EmailSender localEmailSender)
+	{
+		this.localEmailSender = localEmailSender;
+
 		this.targetCountLocalLimit =
 				GlobalSystemParameterConfigurationSettings
 						.getMassMailingTargetCountLocalLimit();
@@ -53,5 +61,7 @@ public class MassMailingService
 	long targetCountLocalLimit;
 
 	int lineCountLocalLimit;
+
+	EmailSender localEmailSender;
 
 }

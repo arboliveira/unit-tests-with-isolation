@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
 import static org.powermock.api.support.membermodification.MemberModifier.stub;
 
@@ -20,7 +19,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.liferay.arbo.email.Address;
-import com.liferay.arbo.email.LocalEmailSender;
+import com.liferay.arbo.email.EmailSender;
 import com.liferay.arbo.email.Message;
 import com.liferay.arbo.global.GlobalSystemParameterConfigurationSettings;
 import com.massmailingcorp.api.CommercialMailingService;
@@ -29,7 +28,6 @@ import com.massmailingcorp.api.CommercialMailingServiceFactory;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
 		GlobalSystemParameterConfigurationSettings.class,
-		LocalEmailSender.class,
 		CommercialMailingServiceFactory.class
 })
 public class MassMailingServiceTest
@@ -51,14 +49,12 @@ public class MassMailingServiceTest
 		stubTargetCount_acceptable();
 		stubLineCount_acceptable();
 
-		mockStatic(LocalEmailSender.class);
+		EmailSender localEmailSender = mock(EmailSender.class);
 
-		send();
+		send(new MassMailingService(localEmailSender));
 
-		verifyStatic();
-		LocalEmailSender.send(this.message, this.address1);
-		verifyStatic();
-		LocalEmailSender.send(this.message, this.address2);
+		verify(localEmailSender).send(this.message, this.address1);
+		verify(localEmailSender).send(this.message, this.address2);
 	}
 
 	@Test
@@ -147,7 +143,12 @@ public class MassMailingServiceTest
 
 	void send()
 	{
-		new MassMailingService().send(
+		send(new MassMailingService());
+	}
+
+	void send(MassMailingService massMailingService)
+	{
+		massMailingService.send(
 				this.message, Arrays.asList(this.address1, this.address2));
 	}
 
