@@ -1,6 +1,6 @@
 package com.liferay.arbo.massmailing;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.liferay.arbo.email.Address;
 import com.liferay.arbo.email.EmailSender;
@@ -10,12 +10,12 @@ class LocalStrategy implements Strategy
 {
 
 	@Override
-	public void send(Message message, Collection<Address> targets)
+	public void send(Message message, Stream<Address> targets)
 	{
-		for (Address address : targets)
+		targets.forEach(address ->
 		{
 			this.localEmailSender.send(message, address);
-		}
+		});
 	}
 
 	LocalStrategy(EmailSender localEmailSender)

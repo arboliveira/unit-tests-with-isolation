@@ -3,8 +3,7 @@ package com.liferay.arbo.massmailing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +22,7 @@ public class MassMailingServiceTest
 	{
 		MockitoAnnotations.initMocks(this);
 
-		this.targets = Arrays.asList(this.address1, this.address2);
+		this.targets = Stream.of(this.address1, this.address2);
 	}
 
 	@Test
@@ -113,6 +112,6 @@ public class MassMailingServiceTest
 	@Mock Address address1;
 	@Mock Address address2;
 
-	List<Address> targets;
+	Stream<Address> targets;
 
 }

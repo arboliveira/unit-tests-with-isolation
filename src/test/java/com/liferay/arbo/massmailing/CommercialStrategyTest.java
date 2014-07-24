@@ -4,6 +4,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class CommercialStrategyTest
 		when(this.address2.address()).thenReturn("ADDRESS2");
 
 		new CommercialStrategy(this.commercial).send(
-				this.message, Arrays.asList(this.address1, this.address2));
+				this.message, Stream.of(this.address1, this.address2));
 
 		verify(this.commercial).send(
 				"SUBJECT", "BODY", Arrays.asList("ADDRESS1", "ADDRESS2"));

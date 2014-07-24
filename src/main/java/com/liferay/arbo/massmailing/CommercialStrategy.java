@@ -1,7 +1,7 @@
 package com.liferay.arbo.massmailing;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.liferay.arbo.email.Address;
 import com.liferay.arbo.email.Message;
@@ -11,13 +11,14 @@ class CommercialStrategy implements Strategy
 {
 
 	@Override
-	public void send(Message message, Collection<Address> targets)
+	public void send(Message message, Stream<Address> targets)
 	{
-		ArrayList<String> targetsList = new ArrayList<>(targets.size());
-		for (Address address : targets)
-		{
-			targetsList.add(address.address());
-		}
+		ArrayList<String> targetsList =
+				targets
+						.map(Address::address)
+						.collect(
+								ArrayList::new, ArrayList::add,
+								ArrayList::addAll);
 
 		this.commercial.send(message.subject(), message.body(), targetsList);
 	}

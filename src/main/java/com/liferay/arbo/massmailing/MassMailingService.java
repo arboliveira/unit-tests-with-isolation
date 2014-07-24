@@ -1,6 +1,6 @@
 package com.liferay.arbo.massmailing;
 
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.liferay.arbo.email.Address;
 import com.liferay.arbo.email.LocalEmailSender;
@@ -10,15 +10,15 @@ import com.massmailingcorp.api.CommercialMailingServiceFactory;
 public class MassMailingService
 {
 
-	public void send(Message message, Collection<Address> targets)
+	public void send(Message message, Stream<Address> targets)
 	{
 		Strategy strategy = chooseStrategy(message, targets);
 		strategy.send(message, targets);
 	}
 
-	Strategy chooseStrategy(Message message, Collection<Address> targets)
+	Strategy chooseStrategy(Message message, Stream<Address> targets)
 	{
-		if (targets.size() <= this.targetCountLocalLimit
+		if (targets.count() <= this.targetCountLocalLimit
 				&& message.lineCount() <= this.lineCountLocalLimit)
 		{
 			return this.local;

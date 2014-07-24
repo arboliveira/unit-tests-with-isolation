@@ -2,7 +2,7 @@ package com.liferay.arbo.massmailing;
 
 import static org.mockito.Mockito.verify;
 
-import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class LocalStrategyTest
 	public void send()
 	{
 		new LocalStrategy(this.emailSender).send(
-				this.message, Arrays.asList(this.address1, this.address2));
+				this.message, Stream.of(this.address1, this.address2));
 
 		verify(this.emailSender).send(this.message, this.address1);
 		verify(this.emailSender).send(this.message, this.address2);
