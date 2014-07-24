@@ -1,7 +1,6 @@
 package com.liferay.arbo.massmailing;
 
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -9,27 +8,23 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
 import static org.powermock.api.support.membermodification.MemberModifier.stub;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.liferay.arbo.email.Address;
-import com.liferay.arbo.email.EmailSender;
 import com.liferay.arbo.email.Message;
 import com.liferay.arbo.global.GlobalSystemParameterConfigurationSettings;
-import com.massmailingcorp.api.CommercialMailingService;
-import com.massmailingcorp.api.CommercialMailingServiceFactory;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({
-		GlobalSystemParameterConfigurationSettings.class,
-		CommercialMailingServiceFactory.class
-})
+@PrepareForTest({ GlobalSystemParameterConfigurationSettings.class })
 public class MassMailingServiceTest
 {
 
@@ -37,6 +32,8 @@ public class MassMailingServiceTest
 	public void prepareMocks()
 	{
 		MockitoAnnotations.initMocks(this);
+
+		this.targets = Arrays.asList(this.address1, this.address2);
 
 		mockStatic(
 				GlobalSystemParameterConfigurationSettings.class,
@@ -49,12 +46,9 @@ public class MassMailingServiceTest
 		stubTargetCount_acceptable();
 		stubLineCount_acceptable();
 
-		EmailSender localEmailSender = mock(EmailSender.class);
+		send();
 
-		send(new MassMailingService(localEmailSender));
-
-		verify(localEmailSender).send(this.message, this.address1);
-		verify(localEmailSender).send(this.message, this.address2);
+		verifyStrategyUsed(this.local);
 	}
 
 	@Test
@@ -63,7 +57,9 @@ public class MassMailingServiceTest
 		stubTargetCount_tooMany();
 		stubLineCount_acceptable();
 
-		testCommercial();
+		send();
+
+		verifyStrategyUsed(this.commercial);
 	}
 
 	@Test
@@ -72,33 +68,9 @@ public class MassMailingServiceTest
 		stubTargetCount_acceptable();
 		stubLineCount_tooMany();
 
-		testCommercial();
-
-	}
-
-	void testCommercial()
-	{
-		CommercialMailingService commercial =
-				mock(CommercialMailingService.class);
-
-		mockStatic(
-				CommercialMailingServiceFactory.class,
-				CALLS_REAL_METHODS);
-		stub(method(
-				CommercialMailingServiceFactory.class,
-				"getInstance"
-				))
-				.toReturn(commercial);
-
-		when(this.message.subject()).thenReturn("SUBJECT");
-		when(this.message.body()).thenReturn("BODY");
-		when(this.address1.address()).thenReturn("ADDRESS1");
-		when(this.address2.address()).thenReturn("ADDRESS2");
-
 		send();
 
-		verify(commercial).send(
-				"SUBJECT", "BODY", Arrays.asList("ADDRESS1", "ADDRESS2"));
+		verifyStrategyUsed(this.commercial);
 	}
 
 	void stubTargetCount_acceptable()
@@ -143,17 +115,24 @@ public class MassMailingServiceTest
 
 	void send()
 	{
-		send(new MassMailingService());
+		new MassMailingService(this.local, this.commercial)
+				.send(this.message, this.targets);
 	}
 
-	void send(MassMailingService massMailingService)
+	void verifyStrategyUsed(Strategy used)
 	{
-		massMailingService.send(
-				this.message, Arrays.asList(this.address1, this.address2));
+		verify(used).send(this.message, this.targets);
+
+		Strategy unused = used == this.local ? this.commercial : this.local;
+		Mockito.verifyZeroInteractions(unused);
 	}
+
+	@Mock Strategy local;
+	@Mock Strategy commercial;
 
 	@Mock Message message;
 	@Mock Address address1;
 	@Mock Address address2;
 
+	List<Address> targets;
 }
